@@ -1,0 +1,60 @@
+// Counter using D flip flop
+
+module DFF(D,Q,Clk);
+input D,Clk;
+output reg Q;
+always @(posedge Clk)
+    Q <= D;
+endmodule
+
+module JKFF(JK,Q,Clk);
+input [1:0]JK,Clk;
+output reg Q;
+always @(posedge Clk)
+    case(JK)
+        2'b00: Q <= Q;
+        2'b01: Q <= 0;
+        2'b10: Q <= 1;
+        2'b11: Q <= ~Q;
+    endcase
+endmodule
+
+module Counter(Qin,Clk,Qout);
+    wire [3:0]D;
+    input [3:0]Qin;
+    input Clk;
+    output [3:0]Qout;
+    not(D[0],Qin[0]);
+    DFF D0(D[0],Qout[0],Clk);
+    xnor(D[1],Qin[0],Qin[1]);
+    DFF D1(D[1],Qout[1],Clk);
+    wire w1,w2,w3;
+    and(w1,~Qin[0],~Qin[1],Qin[2]);
+    and(w2,Qin[0],~Qin[2]);
+    and(w3,Qin[1],~Qin[2]);
+    or(D[2],w1,w2,w3);
+    DFF D2(D[2],Qout[2],Clk);
+    or(D[3],Qin[2],Qin[3]);
+    DFF D3(D[3],Qout[3],Clk);
+endmodule
+
+
+module main;
+    reg [3:0]Qin;
+    reg Clk;
+    wire [3:0]Qout;
+    Counter C(Qin,Clk,Qout);
+    initial
+        begin
+            Qin <= 4'b0101; Clk=0;
+            #5 Clk=1; 
+            #5 Clk=0; 
+            #5 Clk=1;
+            #5 Clk=0;
+            #5 Clk=1;
+            #5 Clk=0;
+            #5 Clk=1;
+        end
+    initial
+        $monitor("Qin=%4b Clk=%b Qout=%4b time=%0d",Qin,Clk,Qout,$time);
+endmodule

@@ -1,0 +1,38 @@
+module mul_dataflow(input [3:0]I, input [1:0]s, output Y);
+wire [3:0]w;
+and(w[0],I[0],~s[1],~s[0]);
+and(w[1],I[1],~s[1],s[0]);
+and(w[2],I[2],s[1],~s[0]);
+and(w[3],I[3],s[1],s[0]);
+or(Y,w[0],w[1],w[2],w[3]);
+endmodule
+
+module mul_behavioral(input [3:0]I, input [1:0]s, output reg Y);
+always @(s,I)
+    case(s)
+        2'b00: Y=I[0];
+        2'b01: Y=I[1];
+        2'b10: Y=I[2];
+        2'b11: Y=I[3];
+    endcase
+endmodule
+
+module main;
+    reg [3:0]I;
+    reg [1:0]s;
+    wire Y;
+    mul_dataflow m1(I, s, Y);
+    //mul_behavioral m2(I, s, Y);
+    initial
+        begin
+        I <= 4'b0101;
+        s <= 2'b00;
+        #10 s <= 2'b01;
+        #10 s <= 2'b10;
+        #10 s <= 2'b11;
+        end
+        
+    initial
+        $monitor("s = %2b Y = %b time = %0d",s,Y,$time);
+        
+endmodule
